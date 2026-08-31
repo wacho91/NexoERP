@@ -1,5 +1,7 @@
 import os
 from typing import AsyncGenerator
+from dotenv import load_dotenv
+load_dotenv()  
 
 from sqlalchemy import create_engine
 from sqlalchemy.ext.asyncio import (
