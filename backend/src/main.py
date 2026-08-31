@@ -2,13 +2,25 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from src.database import async_engine  # <--- Cambiado a async_engine
+from src.database import async_engine, sync_engine
 from src import routes  # noqa: F401
+from src import models  # <-- Importante: importamos los modelos
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # El motor de SQLAlchemy se conecta solo, solo necesitamos yield
+    # === CREAR LAS TABLAS EN SUPABASE AL ARRANCAR ===
+    # Usamos el engine síncrono para crear las tablas, es más seguro con PostgreSQL
+    from sqlalchemy import inspect
+    def run_sync():
+        models.Base.metadata.create_all(sync_engine)
+    import asyncio
+    loop = asyncio.get_event_loop()
+    await loop.run_in_executor(None, run_sync)
+    print("DEBUG: Tablas creadas/verificadas en Supabase.")
+    # =================================================
+    
     yield
+    
     # Cerramos la conexión al apagar el servidor
     await async_engine.dispose()
 
@@ -19,19 +31,17 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# Configuración CORS para permitir la conexión con el frontend
+# Configuración CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # En producción ponemos el link de Vercel aquí
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Incluimos todas las rutas creadas por los agentes
 app.include_router(routes.router)
 
 @app.get("/", tags=["Health"])
 async def root():
-    """Endpoint de prueba para saber si el servidor está vivo."""
     return {"status": "ok", "service": "NexoERP API"}

@@ -1,5 +1,4 @@
-import { useState, useMemo } from 'react'
-import { useProducts } from '../../hooks/useProducts'
+import { useState, useMemo, useEffect } from 'react'
 import { saleService } from '../../api/saleService'
 import { useToast } from '../../context/ToastContext'
 import { useAuth } from '../../context/AuthContext'
@@ -12,7 +11,32 @@ import Input from '../../components/ui/Input'
 export default function PosPage() {
   const { user } = useAuth()
   const { addToast } = useToast()
-  const { products, loading, reload } = useProducts({ active: true, limit: 100 })
+  
+  // === NUEVA LÓGICA PARA CARGAR PRODUCTOS DIRECTO ===
+  const [products, setProducts] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  const loadProducts = async () => {
+    setLoading(true)
+    try {
+      const token = localStorage.getItem('nexoerp_access_token') || localStorage.getItem('access_token')
+      const res = await fetch('http://localhost:8000/api/v1/products?skip=0&limit=100', {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      const data = await res.json()
+      setProducts(data)
+    } catch (error) {
+      console.error("Error cargando productos en POS:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadProducts()
+  }, [])
+  // =================================================
+  
   const [search, setSearch] = useState('')
   const [cart, setCart] = useState([])
   const [showCheckout, setShowCheckout] = useState(false)
@@ -57,7 +81,7 @@ export default function PosPage() {
   const handleCheckoutSuccess = () => {
     setShowCheckout(false)
     clearCart()
-    reload()
+    loadProducts() // Recargamos los productos para actualizar el stock
     addToast('Venta completada', 'success')
   }
 
