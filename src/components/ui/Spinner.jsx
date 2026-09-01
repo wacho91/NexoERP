@@ -1,10 +1,11 @@
-export default function Spinner({ size = 'md', fullScreen = false }) {
-  if (fullScreen) {
+export default function Spinner({ size = 'md', fullContent = false }) {
+  // Modo para el área de contenido (no tapa el menú lateral)
+  if (fullContent) {
     return (
-      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white dark:bg-gray-900">
+      <div className="flex flex-col items-center justify-center h-[calc(100vh-8rem)] w-full">
         <div className="flex flex-col items-center gap-6">
           {/* Logo Animado */}
-          <div className="text-5xl font-extrabold tracking-tight bg-gradient-to-r from-indigo-600 to-cyan-500 bg-clip-text text-transparent animate-pulse">
+          <div className="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-indigo-600 to-cyan-500 bg-clip-text text-transparent animate-pulse">
             NexoERP
           </div>
           

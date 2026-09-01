@@ -23,8 +23,8 @@ export default function SalesPage() {
     )},
   ]
 
-  // === SPLASH SCREEN PREMIUM ===
-  if (loading) return <Spinner fullScreen />
+  // === LOADER EN EL ÁREA DE CONTENIDO ===
+  if (loading) return <Spinner fullContent />
   if (error) return <div className="p-8 text-center text-red-600 bg-red-50 dark:bg-red-900/20 rounded-lg">{error}</div>
 
   return (
@@ -37,7 +37,6 @@ export default function SalesPage() {
       </div>
 
       {sales.length === 0 ? (
-        // === ESTADO VACÍO (EMPTY STATE) ===
         <div className="flex flex-col items-center justify-center py-20 bg-white dark:bg-gray-800 rounded-xl border border-dashed border-gray-300 dark:border-gray-700">
           <svg className="w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" /></svg>
           <h3 className="text-lg font-semibold text-gray-700 dark:text-white">No hay ventas registradas</h3>
