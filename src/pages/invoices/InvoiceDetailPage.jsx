@@ -19,9 +19,9 @@ export default function InvoiceDetailPage() {
       .finally(() => setLoading(false))
   }, [id])
 
-  // === USAMOS EL SPLASH SCREEN PREMIUM AQUÍ ===
-  if (loading) return <Spinner fullScreen />
-  if (error) return <div className="text-red-600 p-8 text-center">{error}</div>
+  // === LOADER EN EL ÁREA DE CONTENIDO ===
+  if (loading) return <Spinner fullContent />
+  if (error) return <div className="p-8 text-center text-red-600 bg-red-50 dark:bg-red-900/20 rounded-lg">{error}</div>
   if (!invoice) return null
 
   return (
@@ -72,7 +72,6 @@ export default function InvoiceDetailPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                {/* Si la API trae items, los mapeamos. Si no, mostramos el resumen */}
                 {invoice.items && invoice.items.length > 0 ? (
                   invoice.items.map((item, i) => (
                     <tr key={i} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
