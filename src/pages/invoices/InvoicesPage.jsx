@@ -35,9 +35,10 @@ export default function InvoicesPage() {
         <p className="text-sm text-gray-500">Documentos fiscales generados</p>
       </div>
       {loading ? (
-        <div className="flex justify-center py-12"><Spinner /></div>
+        // Cambiamos el spinner pequeño por uno grande centrado
+        <div className="flex justify-center py-24"><Spinner size="lg" /></div>
       ) : error ? (
-        <div className="text-red-600">{error}</div>
+        <div className="text-red-600 bg-red-50 dark:bg-red-900/20 p-4 rounded-lg">{error}</div>
       ) : (
         <div className="card overflow-hidden">
           <Table columns={columns} data={invoices} onRowClick={(row) => navigate(`/invoices/${row.id}`)} />
