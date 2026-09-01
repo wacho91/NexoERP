@@ -53,8 +53,8 @@ export default function SaleDetailPage() {
     }
   }
 
-  // === SPLASH SCREEN PREMIUM ===
-  if (loading) return <Spinner fullScreen />
+  // === LOADER EN EL ÁREA DE CONTENIDO ===
+  if (loading) return <Spinner fullContent />
   if (error) return <div className="p-8 text-center text-red-600 bg-red-50 dark:bg-red-900/20 rounded-lg">{error}</div>
   if (!sale) return null
 
