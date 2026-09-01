@@ -53,74 +53,76 @@ export default function SaleDetailPage() {
     }
   }
 
-  if (loading) return <div className="flex justify-center py-12"><Spinner /></div>
-  if (error) return <div className="text-red-600">{error}</div>
+  // === SPLASH SCREEN PREMIUM ===
+  if (loading) return <Spinner fullScreen />
+  if (error) return <div className="p-8 text-center text-red-600 bg-red-50 dark:bg-red-900/20 rounded-lg">{error}</div>
   if (!sale) return null
 
   const itemColumns = [
-    { key: 'product', label: 'Producto', render: (row) => row.product?.name || row.product_id },
-    { key: 'quantity', label: 'Cantidad' },
-    { key: 'unit_price', label: 'Precio unitario', render: (row) => formatCurrency(row.unit_price) },
-    { key: 'subtotal', label: 'Subtotal', render: (row) => formatCurrency(row.subtotal) },
+    { key: 'product', label: 'Producto', render: (row) => <span className="font-medium text-gray-800 dark:text-white">{row.product?.name || row.product_id}</span> },
+    { key: 'quantity', label: 'Cantidad', render: (row) => <span className="text-gray-500">{row.quantity}</span> },
+    { key: 'unit_price', label: 'Precio Unit.', render: (row) => formatCurrency(row.unit_price) },
+    { key: 'subtotal', label: 'Subtotal', render: (row) => <span className="font-semibold">{formatCurrency(row.subtotal)}</span> },
   ]
 
   return (
-    <div className="space-y-6">
-      <Button variant="ghost" onClick={() => navigate('/sales')}>← Volver a ventas</Button>
+    <div className="max-w-5xl mx-auto py-6 space-y-6">
+      <Button variant="ghost" onClick={() => navigate('/sales')} className="text-gray-500 hover:text-gray-700">← Volver a ventas</Button>
 
-      <div className="card p-6">
-        <div className="flex flex-wrap items-center justify-between gap-4">
+      {/* Cabecera de la Orden */}
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+        <div className="bg-gradient-to-r from-indigo-600 to-cyan-500 p-6 text-white flex justify-between items-center">
           <div>
-            <h2 className="text-2xl font-bold">Venta #{sale.number}</h2>
-            <p className="text-sm text-gray-500">{formatDate(sale.created_at)}</p>
+            <h2 className="text-2xl font-bold">Orden #{sale.number}</h2>
+            <p className="text-indigo-100 text-sm mt-1">{formatDate(sale.created_at)}</p>
           </div>
-          <Badge color="green">{sale.status}</Badge>
+          <Badge color="green" className="bg-white/20 text-white capitalize">{sale.status}</Badge>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6">
+        <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
-            <div className="text-xs text-gray-500">Cliente</div>
-            <div className="font-medium">{sale.customer_name || 'Consumidor final'}</div>
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Cliente</p>
+            <p className="font-semibold text-gray-800 dark:text-white">{sale.customer_name || 'Consumidor final'}</p>
           </div>
           <div>
-            <div className="text-xs text-gray-500">Método de pago</div>
-            <div className="font-medium capitalize">{sale.payment_method}</div>
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Método de Pago</p>
+            <p className="font-semibold text-gray-800 dark:text-white capitalize">{sale.payment_method}</p>
           </div>
           <div>
-            <div className="text-xs text-gray-500">Subtotal</div>
-            <div className="font-medium">{formatCurrency(sale.subtotal)}</div>
-          </div>
-          <div>
-            <div className="text-xs text-gray-500">Total</div>
-            <div className="font-bold text-teal-600 text-lg">{formatCurrency(sale.total)}</div>
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Total Pagado</p>
+            <p className="font-extrabold text-2xl text-indigo-600 dark:text-cyan-400">{formatCurrency(sale.total)}</p>
           </div>
         </div>
       </div>
 
-      <div className="card p-6">
-        <h3 className="text-lg font-semibold mb-4">Artículos</h3>
+      {/* Artículos */}
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+        <h3 className="text-lg font-bold mb-4 text-gray-800 dark:text-white">Artículos Vendidos</h3>
         <Table columns={itemColumns} data={sale.sale_items} />
       </div>
 
-      <div className="card p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-lg font-semibold">Factura</h3>
-            {invoice ? (
-              <div className="mt-2">
-                <p>Factura #{invoice.invoice_number}</p>
-                <p className="text-sm text-gray-500">{formatDate(invoice.issued_at)}</p>
-              </div>
-            ) : (
-              <p className="text-sm text-gray-500">Esta venta no tiene factura asociada</p>
-            )}
-          </div>
-          {!invoice && (
-            <Button onClick={handleGenerateInvoice} disabled={generating}>
-              {generating ? 'Generando...' : 'Generar factura'}
-            </Button>
+      {/* Factura */}
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h3 className="text-lg font-bold text-gray-800 dark:text-white">Documento Fiscal</h3>
+          {invoice ? (
+            <div className="mt-2 text-sm">
+              <p className="font-medium text-gray-700 dark:text-gray-300">Factura #{invoice.invoice_number}</p>
+              <p className="text-gray-400">{formatDate(invoice.issued_at)}</p>
+            </div>
+          ) : (
+            <p className="text-sm text-gray-400 mt-2">Esta venta no tiene factura asociada todavía.</p>
           )}
         </div>
+        {invoice ? (
+          <Button onClick={() => navigate(`/invoices/${invoice.id}`)} className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-white hover:bg-gray-200">
+            Ver Factura
+          </Button>
+        ) : (
+          <Button onClick={handleGenerateInvoice} disabled={generating} className="bg-gradient-to-r from-indigo-600 to-cyan-500 text-white">
+            {generating ? 'Generando...' : 'Generar Factura'}
+          </Button>
+        )}
       </div>
     </div>
   )
