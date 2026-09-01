@@ -18,10 +18,10 @@ export default function Sidebar() {
   const navigate = useNavigate()
 
   return (
-    <aside className="hidden lg:flex fixed inset-y-0 left-0 w-64 bg-gray-900 text-white flex-col">
+    <aside className="hidden lg:flex fixed inset-y-0 left-0 w-64 bg-gray-900 text-white flex-col border-r border-gray-800">
       <div className="px-6 py-6 border-b border-gray-800">
         <button onClick={() => navigate('/')} className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-teal-500 rounded-lg flex items-center justify-center font-bold text-lg">
+          <div className="w-10 h-10 bg-gradient-to-br from-indigo-600 to-cyan-500 rounded-lg flex items-center justify-center font-bold text-lg shadow-lg">
             N
           </div>
           <div>
@@ -38,8 +38,10 @@ export default function Sidebar() {
             to={item.to}
             end={item.to === '/'}
             className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition ${
-                isActive ? 'bg-teal-600 text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+              `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                isActive 
+                  ? 'bg-gradient-to-r from-indigo-600 to-cyan-500 text-white shadow-md' 
+                  : 'text-gray-400 hover:bg-gray-800 hover:text-white'
               }`
             }
           >
@@ -53,12 +55,12 @@ export default function Sidebar() {
 
       <div className="px-6 py-4 border-t border-gray-800">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-gray-700 flex items-center justify-center text-sm font-semibold">
+          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-500 to-cyan-400 flex items-center justify-center text-sm font-bold text-white">
             {user?.full_name?.charAt(0) || 'U'}
           </div>
           <div className="min-w-0">
-            <div className="text-sm font-medium truncate">{user?.full_name}</div>
-            <div className="text-xs text-gray-400 truncate capitalize">{user?.role}</div>
+            <div className="text-sm font-medium truncate text-white">{user?.full_name}</div>
+            <div className="text-xs text-gray-500 truncate capitalize">{user?.role}</div>
           </div>
         </div>
       </div>
