@@ -47,7 +47,8 @@ export default function ReportsPage() {
 
   const isLoading = loadingSales || loadingProducts
 
-  if (isLoading) return <div className="flex justify-center py-12"><Spinner /></div>
+  // === LOADER PREMIUM AQUÍ ===
+  if (isLoading) return <Spinner fullContent />
 
   return (
     <div className="space-y-6">
