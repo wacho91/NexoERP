@@ -37,10 +37,11 @@ export default function AuditLogsPage() {
         <h2 className="text-2xl font-bold">Auditoría</h2>
         <p className="text-sm text-gray-500">Registro de acciones del sistema</p>
       </div>
+      {/* === LOADER PREMIUM AQUÍ === */}
       {loading ? (
-        <div className="flex justify-center py-12"><Spinner /></div>
+        <Spinner fullContent />
       ) : error ? (
-        <div className="text-red-600">{error}</div>
+        <div className="text-red-600 p-4 bg-red-50 rounded-lg">{error}</div>
       ) : (
         <div className="card overflow-hidden">
           <Table columns={columns} data={logs} />
