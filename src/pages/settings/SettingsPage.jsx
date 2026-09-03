@@ -20,7 +20,8 @@ export default function SettingsPage() {
   })
   const [saving, setSaving] = useState(false)
 
-  if (loading) return <div className="flex justify-center py-12"><Spinner /></div>
+  // === LOADER PREMIUM AQUÍ ===
+  if (loading) return <Spinner fullContent />
 
   const handleSubmit = async (e) => {
     e.preventDefault()
