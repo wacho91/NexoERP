@@ -12,7 +12,6 @@ export default function PosPage() {
   const { user } = useAuth()
   const { addToast } = useToast()
   
-  // === NUEVA LÓGICA PARA CARGAR PRODUCTOS DIRECTO ===
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -35,7 +34,6 @@ export default function PosPage() {
   useEffect(() => {
     loadProducts()
   }, [])
-  // =================================================
   
   const [search, setSearch] = useState('')
   const [cart, setCart] = useState([])
@@ -81,11 +79,12 @@ export default function PosPage() {
   const handleCheckoutSuccess = () => {
     setShowCheckout(false)
     clearCart()
-    loadProducts() // Recargamos los productos para actualizar el stock
+    loadProducts()
     addToast('Venta completada', 'success')
   }
 
-  if (loading) return <div className="flex justify-center py-12"><Spinner /></div>
+  // === LOADER PREMIUM AQUÍ ===
+  if (loading) return <Spinner fullContent />
 
   return (
     <div className="space-y-6">
