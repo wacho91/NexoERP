@@ -48,8 +48,9 @@ export default function DashboardPage() {
         <p className="text-sm text-gray-500">Bienvenido de nuevo, {store?.name}</p>
       </div>
 
+      {/* === LOADER PREMIUM AQUÍ === */}
       {isLoading ? (
-        <div className="flex justify-center py-12"><Spinner /></div>
+        <Spinner fullContent />
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
