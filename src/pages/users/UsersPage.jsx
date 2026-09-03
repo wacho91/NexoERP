@@ -130,10 +130,11 @@ export default function UsersPage() {
         <Button onClick={openCreate}>Nuevo usuario</Button>
       </div>
 
+      {/* === LOADER PREMIUM AQUÍ === */}
       {loading ? (
-        <div className="flex justify-center py-12"><Spinner /></div>
+        <Spinner fullContent />
       ) : error ? (
-        <div className="text-red-600">{error}</div>
+        <div className="text-red-600 p-4 bg-red-50 rounded-lg">{error}</div>
       ) : (
         <div className="card overflow-hidden">
           <Table columns={columns} data={users} />
