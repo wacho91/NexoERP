@@ -10,16 +10,14 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 
-# === LINK DE SUPABASE PEGADO DIRECTO ===
-# ¡OJO! Reemplaza TU_CONTRASEÑA y TU_PROJECT_ID por los datos reales de Supabase.
-# El Project ID es ese código largo que te salía en Supabase (ej: ijpdlyrbdfwsxvzddfei)
-DATABASE_URL = "postgresql+asyncpg://postgres:luQUEn7oz9YgjZ12@db.ijpdlyrbdfwsxvzddfei.supabase.co:5432/postgres"
+# === LEER URL DESDE VARIABLES DE ENTORNO ===
+DATABASE_URL = os.getenv("DATABASE_URL")
 
-# Línea de debug para ver qué URL está usando
+# Línea de debug para ver qué URL está usando en Render
 print(f"DEBUG DATABASE: Conectando a -> {DATABASE_URL}")
-# =======================================
+# ============================================
 
-SYNC_DATABASE_URL = DATABASE_URL.replace("postgresql+asyncpg", "postgresql+psycopg2")
+SYNC_DATABASE_URL = DATABASE_URL.replace("postgresql+asyncpg", "postgresql+psycopg2") if DATABASE_URL else ""
 
 async_engine = create_async_engine(
     DATABASE_URL,
