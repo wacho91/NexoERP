@@ -7,51 +7,40 @@ import StockLevelsChart from './components/StockLevelsChart'
 import Spinner from '../../components/ui/Spinner'
 
 export default function ReportsPage() {
-  const { sales, loading: loadingSales } = useSales({ limit: 200 })
+  const { sales, loading: loadingSales, error: errorSales } = useSales({ limit: 200 })
   const { products, loading: loadingProducts } = useProducts({ active: 'all', limit: 100 })
 
-  // === Tendencia de ventas blindada (Agrupa por fechas reales de la BD) ===
+  // === Tendencia de ventas (Blindada) ===
   const salesTrend = useMemo(() => {
     if (!sales || sales.length === 0) return []
     
-    // Agrupamos las ventas por su fecha real (YYYY-MM-DD)
-    const grouped = sales.reduce((acc, sale) => {
-      const date = sale.created_at?.slice(0, 10) // Toma solo la fecha, ignora la hora
-      if (!date) return acc
-      acc[date] = (acc[date] || 0) + parseFloat(sale.total)
-      return acc
-    }, {})
-
-    // Ordenamos las fechas y tomamos las últimas 7 que tengan ventas
-    const sortedDates = Object.keys(grouped).sort()
-    const lastDates = sortedDates.slice(-7)
-
-    return lastDates.map(date => ({
-      date,
-      total: grouped[date]
-    }))
+    const map = {}
+    sales.forEach(sale => {
+      // Extrae la fecha (YYYY-MM-DD) o usa 'Sin fecha'
+      const dateStr = sale.created_at ? sale.created_at.split('T')[0] : 'Sin fecha'
+      const total = parseFloat(sale.total) || 0
+      map[dateStr] = (map[dateStr] || 0) + total
+    })
+    
+    return Object.keys(map).map(date => ({ date, total: map[date] }))
   }, [sales])
 
-  // === Productos más vendidos blindado ===
+  // === Productos más vendidos (Blindada) ===
   const topProducts = useMemo(() => {
     if (!sales || sales.length === 0) return []
     
-    const productsMap = new Map()
-    sales.forEach((sale) => {
-      // Verificamos que la venta sí traiga los items
+    const map = {}
+    sales.forEach(sale => {
       if (sale.sale_items && Array.isArray(sale.sale_items)) {
-        sale.sale_items.forEach((item) => {
-          const name = item.product?.name || `Producto ${item.product_id?.slice(0, 4)}`
-          const current = productsMap.get(name) || 0
-          productsMap.set(name, current + item.quantity)
+        sale.sale_items.forEach(item => {
+          const name = item.product?.name || item.name || `Producto ${item.product_id?.slice(0, 4)}`
+          const qty = item.quantity || 0
+          map[name] = (map[name] || 0) + qty
         })
       }
     })
     
-    return [...productsMap.entries()]
-      .map(([name, quantity]) => ({ name, quantity }))
-      .sort((a, b) => b.quantity - a.quantity)
-      .slice(0, 10)
+    return Object.keys(map).map(name => ({ name, quantity: map[name] }))
   }, [sales])
 
   const stockLevels = useMemo(() => {
@@ -73,40 +62,51 @@ export default function ReportsPage() {
         <p className="text-sm text-gray-500">Análisis de ventas e inventario</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="card p-6">
-          <h3 className="text-sm font-semibold mb-4">Tendencia de ventas</h3>
-          {salesTrend.length > 0 ? (
-            <SalesTrendChart data={salesTrend} />
-          ) : (
-            <div className="h-64 flex items-center justify-center text-gray-400 text-sm">
-              No hay datos de ventas suficientes
-            </div>
-          )}
+      {/* Si el hook de ventas da error, lo mostramos para saber qué pasa */}
+      {errorSales ? (
+        <div className="p-4 bg-red-50 text-red-600 rounded-lg">
+          Error al cargar ventas: {errorSales}
         </div>
-        
-        <div className="card p-6">
-          <h3 className="text-sm font-semibold mb-4">Productos más vendidos</h3>
-          {topProducts.length > 0 ? (
-            <TopProductsChart data={topProducts} />
-          ) : (
-            <div className="h-64 flex items-center justify-center text-gray-400 text-sm">
-              No hay datos de productos vendidos
-            </div>
-          )}
+      ) : sales.length === 0 ? (
+        <div className="p-8 text-center text-gray-500 bg-white rounded-xl border border-dashed">
+          No hay ventas registradas para generar reportes. Haz una venta en el POS primero.
         </div>
-        
-        <div className="card p-6 lg:col-span-2">
-          <h3 className="text-sm font-semibold mb-4">Niveles de stock</h3>
-          {stockLevels.length > 0 ? (
-            <StockLevelsChart data={stockLevels} />
-          ) : (
-            <div className="h-64 flex items-center justify-center text-gray-400 text-sm">
-              No hay productos en el inventario
-            </div>
-          )}
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="card p-6">
+            <h3 className="text-sm font-semibold mb-4">Tendencia de ventas</h3>
+            {salesTrend.length > 0 ? (
+              <SalesTrendChart data={salesTrend} />
+            ) : (
+              <div className="h-64 flex items-center justify-center text-gray-400 text-sm">
+                Formato de fecha no reconocido en las ventas
+              </div>
+            )}
+          </div>
+          
+          <div className="card p-6">
+            <h3 className="text-sm font-semibold mb-4">Productos más vendidos</h3>
+            {topProducts.length > 0 ? (
+              <TopProductsChart data={topProducts} />
+            ) : (
+              <div className="h-64 flex flex-col items-center justify-center text-gray-400 text-sm gap-2">
+                <span>Las ventas no incluyen detalle de productos.</span>
+              </div>
+            )}
+          </div>
+          
+          <div className="card p-6 lg:col-span-2">
+            <h3 className="text-sm font-semibold mb-4">Niveles de stock</h3>
+            {stockLevels.length > 0 ? (
+              <StockLevelsChart data={stockLevels} />
+            ) : (
+              <div className="h-64 flex items-center justify-center text-gray-400 text-sm">
+                No hay productos en el inventario
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }
