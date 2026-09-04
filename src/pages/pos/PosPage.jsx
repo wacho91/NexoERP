@@ -39,6 +39,11 @@ export default function PosPage() {
   const [cart, setCart] = useState([])
   const [showCheckout, setShowCheckout] = useState(false)
 
+  // === LÓGICA DE PAGINACIÓN (8 PRODUCTOS POR PÁGINA) ===
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 8
+  // =======================================================
+
   const filteredProducts = useMemo(() => {
     if (!search) return products
     return products.filter((p) =>
@@ -46,6 +51,13 @@ export default function PosPage() {
       (p.sku && p.sku.toLowerCase().includes(search.toLowerCase()))
     )
   }, [products, search])
+
+  // === APLICAR PAGINACIÓN A LOS FILTRADOS ===
+  const indexOfLastItem = currentPage * itemsPerPage
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage
+  const currentProducts = filteredProducts.slice(indexOfFirstItem, indexOfLastItem)
+  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage)
+  // ==========================================
 
   const addToCart = (product) => {
     setCart((prev) => {
@@ -83,7 +95,6 @@ export default function PosPage() {
     addToast('Venta completada', 'success')
   }
 
-  // === LOADER PREMIUM AQUÍ ===
   if (loading) return <Spinner fullContent />
 
   return (
@@ -95,8 +106,35 @@ export default function PosPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-4">
-          <Input placeholder="Buscar producto..." value={search} onChange={(e) => setSearch(e.target.value)} />
-          <ProductGrid products={filteredProducts} onAdd={addToCart} />
+          <Input 
+            placeholder="Buscar producto..." 
+            value={search} 
+            onChange={(e) => { setSearch(e.target.value); setCurrentPage(1) }} 
+          />
+          <ProductGrid products={currentProducts} onAdd={addToCart} />
+          
+          {/* === BOTONES DE PAGINACIÓN === */}
+          {totalPages > 1 && (
+            <div className="flex justify-center items-center gap-4 mt-6">
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className="px-4 py-2 text-sm font-semibold border border-gray-200 dark:border-gray-700 rounded-lg disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+              >
+                ← Anterior
+              </button>
+              <span className="text-sm font-bold bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 px-4 py-2 rounded-lg">
+                Página {currentPage} de {totalPages}
+              </span>
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+                className="px-4 py-2 text-sm font-semibold border border-gray-200 dark:border-gray-700 rounded-lg disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+              >
+                Siguiente →
+              </button>
+            </div>
+          )}
         </div>
         <div>
           <CartPanel
