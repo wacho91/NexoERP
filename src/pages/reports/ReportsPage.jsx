@@ -9,7 +9,7 @@ import Spinner from '../../components/ui/Spinner'
 export default function ReportsPage() {
   // Quitamos 'active: all' y limitamos a 100 que es lo que el backend permite
   const { sales, loading: loadingSales, error: errorSales } = useSales({ limit: 100 })
-  const { products, loading: loadingProducts, error: errorProducts } = useProducts({ limit: 100 })
+  const { products, loading: loadingProducts, error: errorProducts } = useProducts({ active: true, limit: 100 })
 
   const salesTrend = useMemo(() => {
     if (!sales || sales.length === 0) return []
