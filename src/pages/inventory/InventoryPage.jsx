@@ -24,6 +24,15 @@ export default function InventoryPage() {
   const [editingProduct, setEditingProduct] = useState(null)
   const [productForStock, setProductForStock] = useState(null)
 
+  // === LÓGICA DE PAGINACIÓN ===
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 6
+  const indexOfLastItem = currentPage * itemsPerPage
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage
+  const currentProducts = products.slice(indexOfFirstItem, indexOfLastItem)
+  const totalPages = Math.ceil(products.length / itemsPerPage)
+  // ============================
+
   const handleEdit = (product) => {
     setEditingProduct(product)
     setShowForm(true)
@@ -57,12 +66,12 @@ export default function InventoryPage() {
 
       <div className="card p-4">
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-          <Input placeholder="Buscar por nombre, SKU..." value={search} onChange={(e) => setSearch(e.target.value)} />
-          <select className="input" value={category} onChange={(e) => setCategory(e.target.value)}>
+          <Input placeholder="Buscar por nombre, SKU..." value={search} onChange={(e) => { setSearch(e.target.value); setCurrentPage(1) }} />
+          <select className="input" value={category} onChange={(e) => { setCategory(e.target.value); setCurrentPage(1) }}>
             <option value="">Todas las categorías</option>
             {categories.map((c) => <option key={c} value={c}>{c}</option>)}
           </select>
-          <select className="input" value={active} onChange={(e) => setActive(e.target.value)}>
+          <select className="input" value={active} onChange={(e) => { setActive(e.target.value); setCurrentPage(1) }}>
             <option value="all">Todos</option>
             <option value="true">Activos</option>
             <option value="false">Inactivos</option>
@@ -70,21 +79,45 @@ export default function InventoryPage() {
         </div>
       </div>
 
-      {/* === LOADER PREMIUM AQUÍ === */}
       {loading ? (
         <Spinner fullContent />
       ) : error ? (
         <div className="text-red-600 p-4 bg-red-50 rounded-lg">{error}</div>
       ) : (
-        <div className="card overflow-hidden">
-          <ProductTable
-            products={products}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            onStockAdjust={setProductForStock}
-            onRowClick={(p) => navigate(`/inventory/${p.id}`)}
-          />
-        </div>
+        <>
+          <div className="card overflow-hidden">
+            <ProductTable
+              products={currentProducts}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              onStockAdjust={setProductForStock}
+              onRowClick={(p) => navigate(`/inventory/${p.id}`)}
+            />
+          </div>
+          
+          {/* === BOTONES DE PAGINACIÓN === */}
+          {totalPages > 1 && (
+            <div className="flex justify-center items-center gap-4 mt-6">
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className="px-4 py-2 text-sm font-semibold border border-gray-200 dark:border-gray-700 rounded-lg disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+              >
+                ← Anterior
+              </button>
+              <span className="text-sm font-bold bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 px-4 py-2 rounded-lg">
+                Página {currentPage} de {totalPages}
+              </span>
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+                className="px-4 py-2 text-sm font-semibold border border-gray-200 dark:border-gray-700 rounded-lg disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+              >
+                Siguiente →
+              </button>
+            </div>
+          )}
+        </>
       )}
 
       <Modal open={showForm} title={editingProduct ? 'Editar producto' : 'Nuevo producto'} onClose={() => setShowForm(false)} size="lg">
