@@ -18,6 +18,15 @@ export default function InvoicesPage() {
       .finally(() => setLoading(false))
   }, [])
 
+  // === LÓGICA DE PAGINACIÓN ===
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 6
+  const indexOfLastItem = currentPage * itemsPerPage
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage
+  const currentInvoices = invoices.slice(indexOfFirstItem, indexOfLastItem)
+  const totalPages = Math.ceil(invoices.length / itemsPerPage)
+  // ============================
+
   const columns = [
     { key: 'invoice_number', label: 'No. Factura', render: (row) => <span className="font-medium">#{row.invoice_number}</span> },
     { key: 'sale_id', label: 'Venta', render: (row) => `#${row.sale_id?.slice(0, 8) || ''}` },
@@ -35,14 +44,38 @@ export default function InvoicesPage() {
         <p className="text-sm text-gray-500">Documentos fiscales generados</p>
       </div>
       {loading ? (
-        // Cambiamos el spinner pequeño por uno grande centrado
         <div className="flex justify-center py-24"><Spinner size="lg" /></div>
       ) : error ? (
         <div className="text-red-600 bg-red-50 dark:bg-red-900/20 p-4 rounded-lg">{error}</div>
       ) : (
-        <div className="card overflow-hidden">
-          <Table columns={columns} data={invoices} onRowClick={(row) => navigate(`/invoices/${row.id}`)} />
-        </div>
+        <>
+          <div className="card overflow-hidden">
+            <Table columns={columns} data={currentInvoices} onRowClick={(row) => navigate(`/invoices/${row.id}`)} />
+          </div>
+          
+          {/* === BOTONES DE PAGINACIÓN === */}
+          {totalPages > 1 && (
+            <div className="flex justify-center items-center gap-4 mt-6">
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className="px-4 py-2 text-sm font-semibold border border-gray-200 dark:border-gray-700 rounded-lg disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+              >
+                ← Anterior
+              </button>
+              <span className="text-sm font-bold bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 px-4 py-2 rounded-lg">
+                Página {currentPage} de {totalPages}
+              </span>
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+                className="px-4 py-2 text-sm font-semibold border border-gray-200 dark:border-gray-700 rounded-lg disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+              >
+                Siguiente →
+              </button>
+            </div>
+          )}
+        </>
       )}
     </div>
   )
