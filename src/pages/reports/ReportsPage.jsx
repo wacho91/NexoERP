@@ -18,18 +18,21 @@ export default function ReportsPage() {
     })
     return last14Days.map((date) => ({
       date,
-      total: sales.filter((s) => s.created_at.startsWith(date)).reduce((sum, s) => sum + parseFloat(s.total), 0),
+      total: sales.filter((s) => s.created_at?.startsWith(date)).reduce((sum, s) => sum + parseFloat(s.total), 0),
     }))
   }, [sales])
 
   const topProducts = useMemo(() => {
     const productsMap = new Map()
     sales.forEach((sale) => {
-      sale.sale_items.forEach((item) => {
-        const name = item.product?.name || item.product_id
-        const current = productsMap.get(name) || 0
-        productsMap.set(name, current + item.quantity)
-      })
+      // === PROTECCIÓN: Si la lista no trae items, no se rompe la gráfica ===
+      if (sale.sale_items && Array.isArray(sale.sale_items)) {
+        sale.sale_items.forEach((item) => {
+          const name = item.product?.name || item.product_id
+          const current = productsMap.get(name) || 0
+          productsMap.set(name, current + item.quantity)
+        })
+      }
     })
     return [...productsMap.entries()]
       .map(([name, quantity]) => ({ name, quantity }))
