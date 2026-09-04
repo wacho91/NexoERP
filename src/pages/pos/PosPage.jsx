@@ -41,7 +41,7 @@ export default function PosPage() {
 
   // === LÓGICA DE PAGINACIÓN (8 PRODUCTOS POR PÁGINA) ===
   const [currentPage, setCurrentPage] = useState(1)
-  const itemsPerPage = 8
+  const itemsPerPage = 6
   // =======================================================
 
   const filteredProducts = useMemo(() => {
