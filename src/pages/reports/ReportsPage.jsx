@@ -10,30 +10,44 @@ export default function ReportsPage() {
   const { sales, loading: loadingSales } = useSales({ limit: 200 })
   const { products, loading: loadingProducts } = useProducts({ active: 'all', limit: 100 })
 
+  // === Tendencia de ventas blindada (Agrupa por fechas reales de la BD) ===
   const salesTrend = useMemo(() => {
-    const last14Days = Array.from({ length: 14 }, (_, i) => {
-      const date = new Date()
-      date.setDate(date.getDate() - (13 - i))
-      return date.toISOString().split('T')[0]
-    })
-    return last14Days.map((date) => ({
+    if (!sales || sales.length === 0) return []
+    
+    // Agrupamos las ventas por su fecha real (YYYY-MM-DD)
+    const grouped = sales.reduce((acc, sale) => {
+      const date = sale.created_at?.slice(0, 10) // Toma solo la fecha, ignora la hora
+      if (!date) return acc
+      acc[date] = (acc[date] || 0) + parseFloat(sale.total)
+      return acc
+    }, {})
+
+    // Ordenamos las fechas y tomamos las últimas 7 que tengan ventas
+    const sortedDates = Object.keys(grouped).sort()
+    const lastDates = sortedDates.slice(-7)
+
+    return lastDates.map(date => ({
       date,
-      total: sales.filter((s) => s.created_at?.startsWith(date)).reduce((sum, s) => sum + parseFloat(s.total), 0),
+      total: grouped[date]
     }))
   }, [sales])
 
+  // === Productos más vendidos blindado ===
   const topProducts = useMemo(() => {
+    if (!sales || sales.length === 0) return []
+    
     const productsMap = new Map()
     sales.forEach((sale) => {
-      // === PROTECCIÓN: Si la lista no trae items, no se rompe la gráfica ===
+      // Verificamos que la venta sí traiga los items
       if (sale.sale_items && Array.isArray(sale.sale_items)) {
         sale.sale_items.forEach((item) => {
-          const name = item.product?.name || item.product_id
+          const name = item.product?.name || `Producto ${item.product_id?.slice(0, 4)}`
           const current = productsMap.get(name) || 0
           productsMap.set(name, current + item.quantity)
         })
       }
     })
+    
     return [...productsMap.entries()]
       .map(([name, quantity]) => ({ name, quantity }))
       .sort((a, b) => b.quantity - a.quantity)
@@ -50,7 +64,6 @@ export default function ReportsPage() {
 
   const isLoading = loadingSales || loadingProducts
 
-  // === LOADER PREMIUM AQUÍ ===
   if (isLoading) return <Spinner fullContent />
 
   return (
@@ -63,15 +76,35 @@ export default function ReportsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="card p-6">
           <h3 className="text-sm font-semibold mb-4">Tendencia de ventas</h3>
-          <SalesTrendChart data={salesTrend} />
+          {salesTrend.length > 0 ? (
+            <SalesTrendChart data={salesTrend} />
+          ) : (
+            <div className="h-64 flex items-center justify-center text-gray-400 text-sm">
+              No hay datos de ventas suficientes
+            </div>
+          )}
         </div>
+        
         <div className="card p-6">
           <h3 className="text-sm font-semibold mb-4">Productos más vendidos</h3>
-          <TopProductsChart data={topProducts} />
+          {topProducts.length > 0 ? (
+            <TopProductsChart data={topProducts} />
+          ) : (
+            <div className="h-64 flex items-center justify-center text-gray-400 text-sm">
+              No hay datos de productos vendidos
+            </div>
+          )}
         </div>
+        
         <div className="card p-6 lg:col-span-2">
           <h3 className="text-sm font-semibold mb-4">Niveles de stock</h3>
-          <StockLevelsChart data={stockLevels} />
+          {stockLevels.length > 0 ? (
+            <StockLevelsChart data={stockLevels} />
+          ) : (
+            <div className="h-64 flex items-center justify-center text-gray-400 text-sm">
+              No hay productos en el inventario
+            </div>
+          )}
         </div>
       </div>
     </div>
