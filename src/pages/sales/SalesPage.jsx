@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useSales } from '../../hooks/useSales'
 import Table from '../../components/ui/Table'
@@ -8,6 +9,15 @@ import { formatCurrency, formatDate } from '../../utils/format'
 export default function SalesPage() {
   const navigate = useNavigate()
   const { sales, loading, error } = useSales({ limit: 100 })
+
+  // === LÓGICA DE PAGINACIÓN ===
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 6
+  const indexOfLastItem = currentPage * itemsPerPage
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage
+  const currentSales = sales.slice(indexOfFirstItem, indexOfLastItem)
+  const totalPages = Math.ceil(sales.length / itemsPerPage)
+  // ============================
 
   const columns = [
     { key: 'number', label: 'No. Orden', render: (row) => <span className="font-bold text-gray-800 dark:text-white">#{row.number}</span> },
@@ -23,7 +33,6 @@ export default function SalesPage() {
     )},
   ]
 
-  // === LOADER EN EL ÁREA DE CONTENIDO ===
   if (loading) return <Spinner fullContent />
   if (error) return <div className="p-8 text-center text-red-600 bg-red-50 dark:bg-red-900/20 rounded-lg">{error}</div>
 
@@ -46,9 +55,34 @@ export default function SalesPage() {
           </button>
         </div>
       ) : (
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-          <Table columns={columns} data={sales} onRowClick={(row) => navigate(`/sales/${row.id}`)} />
-        </div>
+        <>
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+            <Table columns={columns} data={currentSales} onRowClick={(row) => navigate(`/sales/${row.id}`)} />
+          </div>
+          
+          {/* === BOTONES DE PAGINACIÓN === */}
+          {totalPages > 1 && (
+            <div className="flex justify-center items-center gap-4 mt-6">
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className="px-4 py-2 text-sm font-semibold border border-gray-200 dark:border-gray-700 rounded-lg disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+              >
+                ← Anterior
+              </button>
+              <span className="text-sm font-bold bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 px-4 py-2 rounded-lg">
+                Página {currentPage} de {totalPages}
+              </span>
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+                className="px-4 py-2 text-sm font-semibold border border-gray-200 dark:border-gray-700 rounded-lg disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+              >
+                Siguiente →
+              </button>
+            </div>
+          )}
+        </>
       )}
     </div>
   )
