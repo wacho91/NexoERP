@@ -34,8 +34,8 @@ app = FastAPI(
 # Configuración CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Permite a cualquier dominio (incluido Vercel) conectarse
-    allow_credentials=False,  # <- ¡MUY IMPORTANTE! Debe estar en False si usamos "*"
+    allow_origins=["*"],  # Permite a Vercel conectarse
+    allow_credentials=False,  
     allow_methods=["*"],
     allow_headers=["*"],
 )
